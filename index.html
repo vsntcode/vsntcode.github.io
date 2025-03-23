@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .choices {
+            list-style-type: none;
+            padding: 0;
+        }
+        .choices li {
+            margin-bottom: 10px;
+        }
+        footer {
+            margin-top: auto;
+            padding: 10px 0;
+            background-color: #f8f9fa;
+            text-align: center;
+        }
+        .landing-page {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .landing-page button {
+            margin: 20px;
+            padding: 20px;
+            font-size: 20px;
+        }
+        .score-animation {
+            animation: fadeIn 2s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Quiz App</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-user"></i> Vasanth</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <div class="landing-page" id="landing-page">
+            <button class="btn btn-primary" onclick="showAdminOptions()">Admin Option</button>
+            <button class="btn btn-success" onclick="startTest()">Take Test</button>
+        </div>
+        <div id="admin-options" style="display: none;">
+            <button class="btn btn-secondary mb-3" onclick="goHome()">Home</button>
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="fetch-question-tab" data-bs-toggle="tab" data-bs-target="#fetch-question" type="button" role="tab" aria-controls="fetch-question" aria-selected="true">Fetch Question</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="create-question-tab" data-bs-toggle="tab" data-bs-target="#create-question" type="button" role="tab" aria-controls="create-question" aria-selected="false">Create Question</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="all-questions-tab" data-bs-toggle="tab" data-bs-target="#all-questions" type="button" role="tab" aria-controls="all-questions" aria-selected="false">All Questions</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="topics-tab" data-bs-toggle="tab" data-bs-target="#topics" type="button" role="tab" aria-controls="topics" aria-selected="false">Topics</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="fetch-question" role="tabpanel" aria-labelledby="fetch-question-tab">
+                    <div class="mt-4">
+                        <h2>Fetch Question</h2>
+                        <div class="mb-3">
+                            <label for="question-id" class="form-label">Enter Question ID:</label>
+                            <input type="number" class="form-control" id="question-id" name="question-id">
+                            <button class="btn btn-primary mt-2" onclick="fetchQuestion()">Fetch Question</button>
+                        </div>
+                        <div id="quiz-container"></div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="create-question" role="tabpanel" aria-labelledby="create-question-tab">
+                    <div class="mt-4">
+                        <h2>Create a New Question</h2>
+                        <form id="question-form">
+                            <div class="mb-3">
+                                <label for="question-text" class="form-label">Question Text:</label>
+                                <input type="text" class="form-control" id="question-text" name="question-text" required>
+                            </div>
+                            <h3>Choices</h3>
+                            <div id="choices-container">
+                                <div class="choice mb-3">
+                                    <label for="choice-text-1" class="form-label">Choice Text:</label>
+                                    <input type="text" class="form-control" id="choice-text-1" name="choice-text-1" required>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is-correct-1" name="is-correct-1">
+                                        <label class="form-check-label" for="is-correct-1">Is Correct</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary" onclick="addChoice()">Add Another Choice</button>
+                            <button type="submit" class="btn btn-success">Create Question</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="all-questions" role="tabpanel" aria-labelledby="all-questions-tab">
+                    <div class="mt-4">
+                        <h2>All Questions</h2>
+                        <button class="btn btn-info mb-3" onclick="fetchAllQuestions()">Fetch All Questions</button>
+                        <div id="all-questions-container"></div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="topics" role="tabpanel" aria-labelledby="topics-tab">
+                    <div class="mt-4">
+                        <h2>Topics</h2>
+                        <button class="btn btn-info mb-3" onclick="fetchTopics()">Fetch Topics</button>
+                        <div id="topics-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="test-section" style="display: none;">
+            <button class="btn btn-secondary mb-3" onclick="goHome()">Home</button>
+            <div class="mt-4">
+                <h2>Take Test</h2>
+                <div id="test-container"></div>
+                <div id="navigation-buttons" class="mt-4">
+                    <button class="btn btn-secondary" onclick="previousQuestion()">Previous</button>
+                    <button class="btn btn-secondary" onclick="nextQuestion()">Next</button>
+                    <button class="btn btn-primary" onclick="finishTest()">Finish Test</button>
+                </div>
+                <div id="score-container" class="mt-4"></div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2025 Vasanth. All rights reserved.</p>
+    </footer>
+    <script>
+        let choiceCount = 1;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questions = [];
+
+        function showAdminOptions() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('admin-options').style.display = 'block';
+        }
+
+        function startTest() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('test-section').style.display = 'block';
+            fetchAllQuestionsForTest();
+        }
+
+        function goHome() {
+            document.getElementById('landing-page').style.display = 'block';
+            document.getElementById('admin-options').style.display = 'none';
+            document.getElementById('test-section').style.display = 'none';
+        }
+
+        async function fetchQuestion() {
+            const questionId = document.getElementById('question-id').value;
+            if (!questionId) {
+                alert('Please enter a question ID');
+                return;
+            }
+            const response = await fetch(`http://localhost:8000/questions/${questionId}`);
+            if (!response.ok) {
+                alert('Question not found');
+                return;
+            }
+            const question = await response.json();
+            displayQuestion(question);
+        }
+
+        async function fetchChoices(questionId) {
+            const response = await fetch(`http://localhost:8000/choices/${questionId}`);
+            const choices = await response.json();
+            return choices;
+        }
+
+        async function displayQuestion(question) {
+            const quizContainer = document.getElementById('quiz-container');
+            quizContainer.innerHTML = '';
+
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question';
+            questionDiv.innerHTML = `<h2>${question.question_text}</h2>`;
+            quizContainer.appendChild(questionDiv);
+
+            const choices = await fetchChoices(question.id);
+            const choicesList = document.createElement('ul');
+            choicesList.className = 'choices list-group';
+
+            choices.forEach(choice => {
+                const choiceItem = document.createElement('li');
+                choiceItem.className = 'list-group-item';
+                choiceItem.innerHTML = `<label><input type="radio" name="choice" value="${choice.id}"> ${choice.choice_text}</label>`;
+                choicesList.appendChild(choiceItem);
+            });
+
+            quizContainer.appendChild(choicesList);
+        }
+
+        function addChoice() {
+            choiceCount++;
+            const choicesContainer = document.getElementById('choices-container');
+            const choiceDiv = document.createElement('div');
+            choiceDiv.className = 'choice mb-3';
+            choiceDiv.innerHTML = `
+                <label for="choice-text-${choiceCount}" class="form-label">Choice Text:</label>
+                <input type="text" class="form-control" id="choice-text-${choiceCount}" name="choice-text-${choiceCount}" required>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="is-correct-${choiceCount}" name="is-correct-${choiceCount}">
+                    <label class="form-check-label" for="is-correct-${choiceCount}">Is Correct</label>
+                </div>
+            `;
+            choicesContainer.appendChild(choiceDiv);
+        }
+
+        document.getElementById('question-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const questionText = document.getElementById('question-text').value;
+            const choices = [];
+            for (let i = 1; i <= choiceCount; i++) {
+                const choiceText = document.getElementById(`choice-text-${i}`).value;
+                const isCorrect = document.getElementById(`is-correct-${i}`).checked;
+                choices.push({ choice_text: choiceText, is_correct: isCorrect });
+            }
+            const question = { question_text: questionText, choices: choices };
+            const response = await fetch('http://localhost:8000/questions/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(question)
+            });
+            if (response.ok) {
+                alert('Question created successfully');
+                document.getElementById('question-form').reset();
+                choiceCount = 1;
+                document.getElementById('choices-container').innerHTML = `
+                    <div class="choice mb-3">
+                        <label for="choice-text-1" class="form-label">Choice Text:</label>
+                        <input type="text" class="form-control" id="choice-text-1" name="choice-text-1" required>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is-correct-1" name="is-correct-1">
+                            <label class="form-check-label" for="is-correct-1">Is Correct</label>
+                        </div>
+                    </div>
+                `;
+            } else {
+                alert('Failed to create question');
+            }
+        });
+
+        async function fetchAllQuestions() {
+            const response = await fetch('http://localhost:8000/questions/');
+            if (!response.ok) {
+                alert('Failed to fetch questions');
+                return;
+            }
+            const questions = await response.json();
+            displayAllQuestions(questions);
+        }
+
+        function displayAllQuestions(questions) {
+            const allQuestionsContainer = document.getElementById('all-questions-container');
+            allQuestionsContainer.innerHTML = '';
+
+            const questionsList = document.createElement('ul');
+            questionsList.className = 'list-group';
+
+            questions.forEach(question => {
+                const questionItem = document.createElement('li');
+                questionItem.className = 'list-group-item';
+                questionItem.innerHTML = `<strong>ID:</strong> ${question.id} - <strong>Text:</strong> ${question.question_text} <button class="btn btn-danger btn-sm float-end" onclick="deleteQuestion(${question.id})">Delete</button> <button class="btn btn-warning btn-sm float-end me-2" onclick="editQuestion(${question.id})">Edit</button>`;
+                questionsList.appendChild(questionItem);
+            });
+
+            allQuestionsContainer.appendChild(questionsList);
+        }
+
+        async function fetchAllQuestionsForTest() {
+            const response = await fetch('http://localhost:8000/questions/');
+            if (!response.ok) {
+                alert('Failed to fetch questions');
+                return;
+            }
+            questions = await response.json();
+            displayNextQuestion();
+        }
+
+        async function displayNextQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                displayScore();
+                return;
+            }
+
+            const question = questions[currentQuestionIndex];
+            const testContainer = document.getElementById('test-container');
+            testContainer.innerHTML = '';
+
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question';
+            questionDiv.innerHTML = `<h2>${question.question_text}</h2>`;
+            testContainer.appendChild(questionDiv);
+
+            const choices = await fetchChoices(question.id);
+            const choicesList = document.createElement('ul');
+            choicesList.className = 'choices list-group';
+
+            choices.forEach(choice => {
+                const choiceItem = document.createElement('li');
+                choiceItem.className = 'list-group-item';
+                choiceItem.innerHTML = `<label><input type="radio" name="choice" value="${choice.is_correct}" onclick="checkAnswer(${choice.is_correct})"> ${choice.choice_text}</label>`;
+                choicesList.appendChild(choiceItem);
+            });
+
+            testContainer.appendChild(choicesList);
+
+            document.getElementById('navigation-buttons').style.display = 'block';
+        }
+
+        function checkAnswer(isCorrect) {
+            if (isCorrect) {
+                score++;
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            displayNextQuestion();
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayNextQuestion();
+            }
+        }
+
+        function finishTest() {
+            displayScore();
+        }
+
+        function displayScore() {
+            const testContainer = document.getElementById('test-container');
+            testContainer.innerHTML = `<h2 class="score-animation">Your Score: ${score}/${questions.length}</h2>`;
+            document.getElementById('navigation-buttons').style.display = 'none';
+        }
+
+        async function fetchTopics() {
+            const response = await fetch('http://localhost:8000/topics/');
+            if (!response.ok) {
+                alert('Failed to fetch topics');
+                return;
+            }
+            const topics = await response.json();
+            displayTopics(topics);
+        }
+
+        function displayTopics(topics) {
+            const topicsContainer = document.getElementById('topics-container');
+            topicsContainer.innerHTML = '';
+
+            const topicsList = document.createElement('ul');
+            topicsList.className = 'list-group';
+
+            topics.topics.forEach(topic => {
+                const topicItem = document.createElement('li');
+                topicItem.className = 'list-group-item';
+                topicItem.innerHTML = topic;
+                topicsList.appendChild(topicItem);
+            });
+
+            topicsContainer.appendChild(topicsList);
+        }
+
+        async function deleteQuestion(questionId) {
+            const response = await fetch(`http://localhost:8000/questions/${questionId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                alert('Question deleted successfully');
+                fetchAllQuestions();
+            } else {
+                alert('Failed to delete question');
+            }
+        }
+
+        async function editQuestion(questionId) {
+            const newQuestionText = prompt('Enter new question text:');
+            if (!newQuestionText) {
+                return;
+            }
+            const response = await fetch(`http://localhost:8000/questions/${questionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question_text: newQuestionText, choices: [] }) // You can add logic to edit choices as well
+            });
+            if (response.ok) {
+                alert('Question updated successfully');
+                fetchAllQuestions();
+            } else {
+                alert('Failed to update question');
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
